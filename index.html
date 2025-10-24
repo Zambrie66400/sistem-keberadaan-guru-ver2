@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Keberadaan Guru</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100%;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #1e3c72;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-tab {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1e3c72;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 7px 7px 20px rgba(0,0,0,0.15), -7px -7px 20px rgba(255,255,255,0.8);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(145deg, #1e3c72, #2a5298);
+            color: white;
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.2), inset -3px -3px 8px rgba(255,255,255,0.1);
+        }
+
+        .content {
+            margin: 2rem;
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.1), -10px -10px 30px rgba(255,255,255,0.8);
+            min-height: 70vh;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 14px;
+        }
+
+        select, input {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 10px rgba(42, 82, 152, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 8px 8px 20px rgba(0,0,0,0.1), -8px -8px 20px rgba(255,255,255,0.8);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .teacher-list {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
+        }
+
+        .teacher-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .teacher-item.excellent {
+            background: linear-gradient(145deg, #d4edda, #c3e6cb);
+            border-left: 5px solid #28a745;
+        }
+
+        .teacher-item.good {
+            background: linear-gradient(145deg, #fff3cd, #ffeaa7);
+            border-left: 5px solid #ffc107;
+        }
+
+        .teacher-item.poor {
+            background: linear-gradient(145deg, #f8d7da, #f5c6cb);
+            border-left: 5px solid #dc3545;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #2a5298, #1e3c72);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2), -2px -2px 8px rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 7px 7px 20px rgba(0,0,0,0.25), -3px -3px 10px rgba(255,255,255,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(145deg, #28a745, #20c997);
+        }
+
+        .btn-danger {
+            background: linear-gradient(145deg, #dc3545, #e74c3c);
+        }
+
+        .form-section {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: inset 3px 3px 8px rgba(0,0,0,0.1), inset -3px -3px 8px rgba(255,255,255,0.8);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+
+        .popup.show {
+            display: block;
+            animation: popupShow 0.3s ease;
+        }
+
+        @keyframes popupShow {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-excused {
+            background: #28a745;
+        }
+
+        .status-counted {
+            background: #ffc107;
+        }
+
+        .month-info {
+            background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .dashboard-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-section">
+            <div class="logo">🏫</div>
+            <div>
+                <h1 style="margin: 0; font-size: 24px;">SISTEM KEBERADAAN GURU</h1>
+                <h2 style="margin: 0; font-size: 18px; color: #ffd700;">SK BUKIT CERMIN</h2>
+                <p style="margin: 0; opacity: 0.8; font-size: 12px;">Dashboard Pentadbiran Sekolah</p>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 0.5rem;">Status: Sambungan Aktif ☁️</div>
+            <div style="font-size: 11px; opacity: 0.7;">HAK MILIK: 2025@ZAMBRIE BIN MOHAMMED</div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('dashboard')">📊 DASHBOARD</button>
+        <button class="nav-tab" onclick="showTab('admin')">⚙️ PENTADBIRAN</button>
+        <button class="nav-tab" onclick="showTab('analysis')">📈 ANALISIS</button>
+    </nav>
+
+    <main class="content">
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-controls">
+                <div class="control-group">
+                    <label for="month-select">Bulan:</label>
+                    <select id="month-select" onchange="updateDashboard()">
+                        <option value="1">Januari</option>
+                        <option value="2">Februari</option>
+                        <option value="3">Mac</option>
+                        <option value="4">April</option>
+                        <option value="5">Mei</option>
+                        <option value="6">Jun</option>
+                        <option value="7">Julai</option>
+                        <option value="8">Ogos</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12" selected>Disember</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="year-select">Tahun:</label>
+                    <select id="year-select" onchange="updateDashboard()">
+                        <option value="2025" selected>2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                        <option value="2029">2029</option>
+                        <option value="2030">2030</option>
+                        <option value="2031">2031</option>
+                        <option value="2032">2032</option>
+                        <option value="2033">2033</option>
+                        <option value="2034">2034</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="month-info" id="current-month-info">
+                Memaparkan data untuk: Disember 2025 (0 guru berdaftar)
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="attendance-rate">0%</div>
+                    <div class="stat-label">Kadar Kehadiran</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="present-count">0</div>
+                    <div class="stat-label">Guru Hadir</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="absent-count">0</div>
+                    <div class="stat-label">Guru Tidak Hadir</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="school-days">0</div>
+                    <div class="stat-label">Hari Persekolahan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-teachers">0</div>
+                    <div class="stat-label">Jumlah Guru Bulan Ini</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-title">Kehadiran Guru</div>
+                    <canvas id="attendanceChart" width="400" height="300"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Sebab Ketidakhadiran</div>
+                    <canvas id="reasonChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="teacher-list">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📋 Senarai Guru Mengikut Tahap Kehadiran</h3>
+                <div id="teacher-attendance-list">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        Tiada guru berdaftar untuk bulan ini. Sila tambah guru di tab Pentadbiran.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PENTADBIRAN TAB -->
+        <div id="admin" class="tab-content">
+            <div class="form-section">
+                <h3 style="color: #1e3c72; margin-bottom: 1.5rem;">👥 Pengurusan Guru Mengikut Bulan</h3>
+                
+                <div class="month-info" id="admin-month-info">
+                    Menguruskan guru untuk: Disember 2025
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="admin-month">Bulan Pengurusan:</label>
+                        <select id="admin-month" onchange="updateAdminMonthInfo()">
+                            <option value="1">Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Mac</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Jun</option>
+                            <option value="7">Julai</option>
+                            <option value="8">Ogos</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12" selected>Disember</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-year">Tahun:</label>
+                        <select id="admin-year" onchange="updateAdminMonthInfo()">
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                            <option value="2031">2031</option>
+                            <option value="2032">2032</option>
+                            <option value="2033">2033</option>
+                            <option value="2034">2034</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher-name">Nama Guru:</label>
+                        <input type="text" id="teacher-name" placeholder="Masukkan nama guru">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button class="btn btn-success" onclick="addTeacher()">➕ Tambah Guru untuk Bulan Ini</button>
+                    <button class="btn" onclick="carryForwardTeachers()" style="background: linear-gradient(145deg, #17a2b8, #138496);">📅 Bawa Guru ke Bulan Seterusnya</button>
+                    <button class="btn" onclick="clearMonthTeachers()" style="background: linear-gradient(145deg, #6c757d, #495057);">🗑️ Buang Semua Guru Bulan Ini</button>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <h4 style="color: #1e3c72; margin-bottom: 1rem;">📝 Buang Guru Secara Individu</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="remove-teacher-select">Pilih Guru untuk Dibuang:</label>
+                            <select id="remove-teacher-select">
+                                <option value="">Pilih guru yang ingin dibuang</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeIndividualTeacher()">🗑️ Buang Guru & Data Terpilih</button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 style="color: #1e3c72; margin-bottom: 1.5rem;">📅 Tetapan Tarikh & Simpanan</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="school-days-input">Hari Persekolahan:</label>
+                        <input type="number" id="school-days-input" value="20" min="1" max="31" onchange="saveDataToLocalStorage()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button class="btn" onclick="saveToCloud()">☁️ Simpan ke Cloud</button>
+                    <button class="btn" onclick="saveToLocal()">💾 Simpan ke Localhost</button>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 style="color: #1e3c72; margin-bottom: 1.5rem;">📝 Rekod Ketidakhadiran</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="absence-date">Tarikh:</label>
+                        <input type="date" id="absence-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-select">Nama Guru:</label>
+                        <select id="teacher-select">
+                            <option value="">Pilih Guru</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="absence-reason">Sebab Tidak Hadir:</label>
+                        <select id="absence-reason">
+                            <optgroup label="EXCUSED (Tidak Dikira dalam Peratus Ketidakhadiran)">
+                                <option value="Bekerja dari rumah">BEKERJA DARI RUMAH</option>
+                                <option value="Bengkel">BENGKEL</option>
+                                <option value="Bertugas dalam kokurikulum/koakademik/sukan">BERTUGAS DALAM KOKURIKULUM/KOAKADEMIK/SUKAN</option>
+                                <option value="Covid-19">COVID-19</option>
+                                <option value="Kursus">KURSUS</option>
+                                <option value="Mesyuarat">MESYUARAT</option>
+                                <option value="Pengawas peperiksaan">PENGAWAS PEPERIKSAAN</option>
+                                <option value="Proses pemulihan di JPN">PROSES PEMULIHAN DI JPN</option>
+                                <option value="Proses pemulihan di PPD">PROSES PEMULIHAN DI PPD</option>
+                                <option value="Taklimat">TAKLIMAT</option>
+                                <option value="Tugas rasmi seperti yang diarahkan oleh pentadbiran sekolah/PPD/JPN/KPM">TUGAS RASMI SEPERTI YANG DIARAHKAN OLEH PENTADBIRAN SEKOLAH/PPD/JPN/KPM</option>
+                                <option value="Cuti tanpa rekod">CUTI TANPA REKOD</option>
+                            </optgroup>
+                            <optgroup label="COUNTED (Dikira dalam Peratus Ketidakhadiran)">
+                                <option value="Cuti bersalin">CUTI BERSALIN</option>
+                                <option value="Cuti haji">CUTI HAJI</option>
+                                <option value="Cuti kecederaan">CUTI KECEDERAAN</option>
+                                <option value="Cuti kecemasan am">CUTI KECEMASAN AM</option>
+                                <option value="Cuti kuarantin">CUTI KUARANTIN</option>
+                                <option value="Cuti kursus sambilan (PJJ)">CUTI KURSUS SAMBILAN (PJJ)</option>
+                                <option value="Cuti kursus/belajar">CUTI KURSUS/BELAJAR</option>
+                                <option value="Cuti menjaga anak (cuti tanpa gaji)">CUTI MENJAGA ANAK (CUTI TANPA GAJI)</option>
+                                <option value="Cuti rehat">CUTI REHAT</option>
+                                <option value="Cuti rehat khas">CUTI REHAT KHAS</option>
+                                <option value="Cuti sakit">CUTI SAKIT</option>
+                                <option value="Cuti sakit lanjutan">CUTI SAKIT LANJUTAN</option>
+                                <option value="Cuti tanpa gaji">CUTI TANPA GAJI</option>
+                                <option value="Cuti separuh gaji">CUTI SEPARUH GAJI</option>
+                                <option value="Cuti tanpa gaji ikut pasangan">CUTI TANPA GAJI IKUT PASANGAN</option>
+                                <option value="Cuti tibi/kusta/barah">CUTI TIBI/KUSTA/BARAH</option>
+                                <option value="Cuti umrah">CUTI UMRAH</option>
+                                <option value="Tahan/gantung kerja (tatatertib)">TAHAN/GANTUNG KERJA (TATATERTIB)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveAbsence()" style="width: 100%; font-size: 18px; padding: 1.5rem;">💾 SIMPAN REKOD</button>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <div style="background: linear-gradient(145deg, #e9ecef, #f8f9fa); padding: 1rem; border-radius: 10px; display: inline-block;">
+                    <strong>Jumlah Guru Bulan Ini: <span id="admin-total-teachers">0</span></strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALISIS TAB -->
+        <div id="analysis" class="tab-content">
+            <div class="dashboard-controls">
+                <div class="control-group">
+                    <label for="analysis-year">Tahun:</label>
+                    <select id="analysis-year" onchange="updateAnalysis()">
+                        <option value="2025" selected>2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                        <option value="2029">2029</option>
+                        <option value="2030">2030</option>
+                        <option value="2031">2031</option>
+                        <option value="2032">2032</option>
+                        <option value="2033">2033</option>
+                        <option value="2034">2034</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="analysis-month">Bulan:</label>
+                    <select id="analysis-month" onchange="updateAnalysis()">
+                        <option value="">Semua Bulan</option>
+                        <option value="1">Januari</option>
+                        <option value="2">Februari</option>
+                        <option value="3">Mac</option>
+                        <option value="4">April</option>
+                        <option value="5">Mei</option>
+                        <option value="6">Jun</option>
+                        <option value="7">Julai</option>
+                        <option value="8">Ogos</option>
+                        <option value="9">September</option>
+                        <option value="10">Oktober</option>
+                        <option value="11">November</option>
+                        <option value="12">Disember</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="chart-title">Perbandingan Ketidakhadiran Bulanan</div>
+                    <canvas id="monthlyComparisonChart" width="400" height="300"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Trend Sebab Ketidakhadiran</div>
+                    <canvas id="reasonTrendChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="teacher-list">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: #1e3c72; margin: 0;">📊 Senarai Data Ketidakhadiran</h3>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div class="control-group" style="margin: 0;">
+                            <label for="date-from" style="font-size: 12px;">Dari Tarikh:</label>
+                            <input type="date" id="date-from" style="padding: 0.5rem; font-size: 12px;" onchange="filterAbsenceRecords()">
+                        </div>
+                        <div class="control-group" style="margin: 0;">
+                            <label for="date-to" style="font-size: 12px;">Hingga Tarikh:</label>
+                            <input type="date" id="date-to" style="padding: 0.5rem; font-size: 12px;" onchange="filterAbsenceRecords()">
+                        </div>
+                        <div class="control-group" style="margin: 0;">
+                            <label for="sort-order" style="font-size: 12px;">Susunan:</label>
+                            <select id="sort-order" style="padding: 0.5rem; font-size: 12px;" onchange="filterAbsenceRecords()">
+                                <option value="newest">Terbaru Dahulu</option>
+                                <option value="oldest">Terlama Dahulu</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="resetDateFilter()" style="padding: 0.5rem 1rem; font-size: 12px; margin: 0;">🔄 Reset</button>
+                    </div>
+                </div>
+                <div id="absence-records">
+                    <!-- Records will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(145deg, #e3f2fd, #bbdefb); padding: 2rem; border-radius: 15px; margin-top: 2rem;">
+                <h4 style="color: #1e3c72; margin-bottom: 1rem;">📊 Formula & Pengiraan Sistem</h4>
+                <div style="background: white; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <strong>Peratus Ketidakhadiran = (Bil. Hari Tidak Hadir / Bil. Hari Sekolah) × 100</strong>
+                </div>
+                <div style="background: white; padding: 1rem; border-radius: 10px;">
+                    <strong>Contoh:</strong> 5 hari tidak hadir daripada 20 hari sekolah = 25% ketidakhadiran
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <!-- Popup & Overlay -->
+    <div class="overlay" id="overlay" onclick="hidePopup()"></div>
+    <div class="popup" id="popup">
+        <h3 style="color: #28a745; margin-bottom: 1rem;">✅ Berjaya!</h3>
+        <p id="popup-message">Data berjaya disimpan ke Cloud.</p>
+        <button class="btn" onclick="hidePopup()">OK</button>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="overlay" id="confirm-overlay"></div>
+    <div class="popup" id="confirm-dialog" style="max-width: 500px;">
+        <h3 style="color: #dc3545; margin-bottom: 1rem;">⚠️ Pengesahan Diperlukan</h3>
+        <p id="confirm-title" style="font-weight: bold; margin-bottom: 1rem;"></p>
+        <p id="confirm-message" style="color: #666; margin-bottom: 2rem;"></p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button class="btn btn-danger" id="confirm-yes">Ya, Buang Semua</button>
+            <button class="btn" onclick="hideConfirmDialog()" style="background: linear-gradient(145deg, #6c757d, #495057);">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize Charts
+        let attendanceChart, reasonChart, monthlyComparisonChart, reasonTrendChart;
+
+        function initCharts() {
+            // Attendance Pie Chart
+            const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+            attendanceChart = new Chart(attendanceCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Hadir (100%)', 'Tidak Hadir (0%)'],
+                    datasets: [{
+                        data: [100, 0],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Reason Chart
+            const reasonCtx = document.getElementById('reasonChart').getContext('2d');
+            reasonChart = new Chart(reasonCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tiada Data'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['#e9ecef'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Monthly Comparison Chart
+            const monthlyCtx = document.getElementById('monthlyComparisonChart').getContext('2d');
+            monthlyComparisonChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sep', 'Okt', 'Nov', 'Dis'],
+                    datasets: [{
+                        label: 'Peratus Ketidakhadiran (%)',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(30, 60, 114, 0.8)',
+                        borderColor: '#1e3c72',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 15
+                        }
+                    }
+                }
+            });
+
+            // Reason Trend Chart
+            const reasonTrendCtx = document.getElementById('reasonTrendChart').getContext('2d');
+            reasonTrendChart = new Chart(reasonTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Tiada Data',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: '#e9ecef',
+                        backgroundColor: 'rgba(233, 236, 239, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Monthly teacher data storage - organized by year-month
+        const monthlyTeacherData = {};
+        
+        // Absence data storage - organized by year and month
+        const absenceData = {};
+        
+        // Function to get teachers for a specific month (with auto-carry forward logic)
+        function getTeachersForMonth(monthKey) {
+            // If teachers exist for this month, return them
+            if (monthlyTeacherData[monthKey] && monthlyTeacherData[monthKey].length > 0) {
+                return monthlyTeacherData[monthKey];
+            }
+            
+            // Otherwise, look for the previous month with teachers
+            const [year, month] = monthKey.split('-').map(Number);
+            
+            // Check previous months in descending order within the same year
+            for (let checkMonth = month - 1; checkMonth >= 1; checkMonth--) {
+                const checkKey = `${year}-${String(checkMonth).padStart(2, '0')}`;
+                if (monthlyTeacherData[checkKey] && monthlyTeacherData[checkKey].length > 0) {
+                    // Found teachers in previous month - copy them forward
+                    monthlyTeacherData[monthKey] = [...monthlyTeacherData[checkKey]];
+                    saveDataToLocalStorage(); // Auto-save the carried forward data
+                    return monthlyTeacherData[monthKey];
+                }
+            }
+            
+            // If no previous month found in current year, check previous year's December
+            if (month === 1) {
+                const prevYearKey = `${year - 1}-12`;
+                if (monthlyTeacherData[prevYearKey] && monthlyTeacherData[prevYearKey].length > 0) {
+                    monthlyTeacherData[monthKey] = [...monthlyTeacherData[prevYearKey]];
+                    saveDataToLocalStorage(); // Auto-save the carried forward data
+                    return monthlyTeacherData[monthKey];
+                }
+            }
+            
+            // No teachers found in any previous month
+            return [];
+        }
+        
+        // Data persistence functions
+        function saveDataToLocalStorage() {
+            try {
+                // Save absence data
+                localStorage.setItem('teacherAbsenceData', JSON.stringify(absenceData));
+                
+                // Save monthly teacher data
+                localStorage.setItem('monthlyTeacherData', JSON.stringify(monthlyTeacherData));
+                
+                // Save school days setting
+                const schoolDays = document.getElementById('school-days-input').value;
+                localStorage.setItem('schoolDays', schoolDays);
+                
+                console.log('Data saved to localStorage');
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+            }
+        }
+        
+        function loadDataFromLocalStorage() {
+            try {
+                // Load absence data
+                const savedAbsenceData = localStorage.getItem('teacherAbsenceData');
+                if (savedAbsenceData) {
+                    const parsedData = JSON.parse(savedAbsenceData);
+                    Object.assign(absenceData, parsedData);
+                }
+                
+                // Load monthly teacher data
+                const savedMonthlyData = localStorage.getItem('monthlyTeacherData');
+                if (savedMonthlyData) {
+                    const parsedData = JSON.parse(savedMonthlyData);
+                    Object.assign(monthlyTeacherData, parsedData);
+                }
+                
+                // Load school days setting
+                const savedSchoolDays = localStorage.getItem('schoolDays');
+                if (savedSchoolDays) {
+                    document.getElementById('school-days-input').value = savedSchoolDays;
+                }
+                
+                console.log('Data loaded from localStorage');
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+            }
+        }
+
+        // Load teachers for the currently selected month
+        function loadTeachersForCurrentMonth() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            
+            // Clear current teacher dropdowns
+            const teacherSelect = document.getElementById('teacher-select');
+            const removeSelect = document.getElementById('remove-teacher-select');
+            
+            // Keep only the first empty option
+            while (teacherSelect.options.length > 1) {
+                teacherSelect.removeChild(teacherSelect.lastChild);
+            }
+            while (removeSelect.options.length > 1) {
+                removeSelect.removeChild(removeSelect.lastChild);
+            }
+            
+            // Load teachers for this month (with auto-carry forward)
+            const monthTeachers = getTeachersForMonth(monthKey);
+            
+            monthTeachers.forEach(teacher => {
+                // Add to teacher select dropdown
+                const option1 = document.createElement('option');
+                option1.value = teacher;
+                option1.textContent = teacher;
+                teacherSelect.appendChild(option1);
+                
+                // Add to remove teacher select dropdown
+                const option2 = document.createElement('option');
+                option2.value = teacher;
+                option2.textContent = teacher;
+                removeSelect.appendChild(option2);
+            });
+            
+            // Update total teachers count
+            document.getElementById('admin-total-teachers').textContent = monthTeachers.length;
+        }
+        
+        // Load teachers for absence recording (based on current dashboard month)
+        function loadTeachersForAbsenceRecording() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            
+            const teacherSelect = document.getElementById('teacher-select');
+            
+            // Clear ALL options first
+            teacherSelect.innerHTML = '';
+            
+            // Add the default empty option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Pilih Guru';
+            teacherSelect.appendChild(defaultOption);
+            
+            // Load teachers for this month (with auto-carry forward)
+            const monthTeachers = getTeachersForMonth(monthKey);
+            
+            console.log(`Loading teachers for absence recording - Month: ${monthKey}, Teachers found: ${monthTeachers.length}`, monthTeachers);
+            
+            monthTeachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher;
+                option.textContent = teacher;
+                teacherSelect.appendChild(option);
+            });
+            
+            // Debug: Log final dropdown state
+            console.log(`Teacher dropdown updated - Total options: ${teacherSelect.options.length - 1} teachers available`);
+        }
+
+        // Update admin month info display
+        function updateAdminMonthInfo() {
+            const month = document.getElementById('admin-month').value;
+            const year = document.getElementById('admin-year').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            const monthTeachers = getTeachersForMonth(monthKey);
+            
+            // Check if teachers were carried forward
+            const hasOriginalTeachers = monthlyTeacherData[monthKey] && monthlyTeacherData[monthKey].length > 0;
+            const infoText = hasOriginalTeachers ? 
+                `Menguruskan guru untuk: ${getMonthName(month)} ${year} (${monthTeachers.length} guru)` :
+                `Menguruskan guru untuk: ${getMonthName(month)} ${year} (${monthTeachers.length} guru - dibawa dari bulan sebelumnya)`;
+            
+            document.getElementById('admin-month-info').textContent = infoText;
+            
+            // Update remove teacher dropdown for current admin month
+            const removeSelect = document.getElementById('remove-teacher-select');
+            while (removeSelect.options.length > 1) {
+                removeSelect.removeChild(removeSelect.lastChild);
+            }
+            
+            monthTeachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher;
+                option.textContent = teacher;
+                removeSelect.appendChild(option);
+            });
+            
+            document.getElementById('admin-total-teachers').textContent = monthTeachers.length;
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            
+            // Get total teachers count for this specific month (with auto-carry forward)
+            const monthTeachers = getTeachersForMonth(monthKey);
+            const totalTeachers = monthTeachers.length;
+            
+            console.log(`Dashboard Update - Month: ${monthKey}, Teachers: ${totalTeachers}`, monthTeachers);
+            
+            // Check if teachers were carried forward
+            const hasOriginalTeachers = monthlyTeacherData[monthKey] && monthlyTeacherData[monthKey].length > 0;
+            const infoText = hasOriginalTeachers ? 
+                `Memaparkan data untuk: ${getMonthName(month)} ${year} (${totalTeachers} guru berdaftar)` :
+                `Memaparkan data untuk: ${getMonthName(month)} ${year} (${totalTeachers} guru - dibawa dari bulan sebelumnya)`;
+            
+            // Update month info display
+            document.getElementById('current-month-info').textContent = infoText;
+            
+            // Load teachers for current month view
+            loadTeachersForCurrentMonth();
+            
+            // CRITICAL: Force refresh the absence recording dropdown with proper delay
+            setTimeout(() => {
+                console.log('Force refreshing absence recording dropdown...');
+                loadTeachersForAbsenceRecording();
+                
+                // Double-check after another small delay
+                setTimeout(() => {
+                    const teacherSelect = document.getElementById('teacher-select');
+                    const actualCount = teacherSelect.options.length - 1; // Minus the "Pilih Guru" option
+                    console.log(`Final verification - Expected: ${totalTeachers}, Actual in dropdown: ${actualCount}`);
+                    
+                    if (actualCount !== totalTeachers) {
+                        console.warn('Mismatch detected! Force refreshing again...');
+                        loadTeachersForAbsenceRecording();
+                    }
+                }, 200);
+            }, 150);
+            
+            // Get school days from input
+            const schoolDays = parseInt(document.getElementById('school-days-input').value) || 0;
+            
+            // Get absence data for current period
+            const currentAbsenceData = getCurrentAbsenceData();
+            
+            // Calculate stats based on real data
+            let totalAbsentDays = 0;
+            let uniqueAbsentTeachers = new Set();
+            
+            currentAbsenceData.forEach(record => {
+                if (record.category === 'counted') { // Only count "counted" absences
+                    totalAbsentDays++;
+                    uniqueAbsentTeachers.add(record.teacher);
+                }
+            });
+            
+            const absentCount = uniqueAbsentTeachers.size;
+            const presentCount = Math.max(0, totalTeachers - absentCount);
+            
+            // Calculate attendance rate
+            let attendanceRate = 100;
+            if (schoolDays > 0 && totalTeachers > 0) {
+                const totalPossibleDays = schoolDays * totalTeachers;
+                const totalPresentDays = totalPossibleDays - totalAbsentDays;
+                attendanceRate = Math.round((totalPresentDays / totalPossibleDays) * 1000) / 10;
+                attendanceRate = Math.max(0, Math.min(100, attendanceRate)); // Clamp between 0-100
+            }
+            
+            document.getElementById('attendance-rate').textContent = attendanceRate + '%';
+            document.getElementById('present-count').textContent = presentCount;
+            document.getElementById('absent-count').textContent = absentCount;
+            document.getElementById('school-days').textContent = schoolDays;
+            document.getElementById('total-teachers').textContent = totalTeachers;
+            
+            // Update charts with real data
+            updateDashboardCharts();
+            
+            // Update teacher attendance list
+            updateTeacherAttendanceList();
+        }
+
+        // Update dashboard charts with real data
+        function updateDashboardCharts() {
+            const currentAbsenceData = getCurrentAbsenceData();
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            const totalTeachers = (monthlyTeacherData[monthKey] || []).length;
+            const schoolDays = parseInt(document.getElementById('school-days-input').value) || 0;
+            
+            // Calculate attendance data - use PERCENTAGES for pie chart
+            let totalAbsentDays = 0;
+            currentAbsenceData.forEach(record => {
+                if (record.category === 'counted') {
+                    totalAbsentDays++;
+                }
+            });
+            
+            const totalPossibleDays = schoolDays * totalTeachers;
+            
+            // Update Attendance Pie Chart with PERCENTAGES
+            if (totalPossibleDays > 0) {
+                const absentPercentage = Math.round((totalAbsentDays / totalPossibleDays) * 100 * 10) / 10;
+                const presentPercentage = Math.round((100 - absentPercentage) * 10) / 10;
+                
+                attendanceChart.data.datasets[0].data = [presentPercentage, absentPercentage];
+                attendanceChart.data.labels = [`Hadir (${presentPercentage}%)`, `Tidak Hadir (${absentPercentage}%)`];
+            } else {
+                attendanceChart.data.datasets[0].data = [100, 0];
+                attendanceChart.data.labels = ['Hadir (100%)', 'Tidak Hadir (0%)'];
+            }
+            attendanceChart.update();
+            
+            // Update Reason Chart
+            const reasonCounts = {};
+            currentAbsenceData.forEach(record => {
+                if (reasonCounts[record.reason]) {
+                    reasonCounts[record.reason]++;
+                } else {
+                    reasonCounts[record.reason] = 1;
+                }
+            });
+            
+            if (Object.keys(reasonCounts).length > 0) {
+                reasonChart.data.labels = Object.keys(reasonCounts);
+                reasonChart.data.datasets[0].data = Object.values(reasonCounts);
+                reasonChart.data.datasets[0].backgroundColor = [
+                    '#dc3545', '#ffc107', '#28a745', '#17a2b8', '#6f42c1', 
+                    '#fd7e14', '#20c997', '#e83e8c', '#6c757d', '#007bff'
+                ];
+            } else {
+                reasonChart.data.labels = ['Tiada Data'];
+                reasonChart.data.datasets[0].data = [1];
+                reasonChart.data.datasets[0].backgroundColor = ['#e9ecef'];
+            }
+            reasonChart.update();
+        }
+
+        // Update teacher attendance list in dashboard
+        function updateTeacherAttendanceList() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            const monthTeachers = getTeachersForMonth(monthKey);
+            const listContainer = document.getElementById('teacher-attendance-list');
+            
+            if (monthTeachers.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Tiada guru berdaftar untuk bulan ini. Sila tambah guru di tab Pentadbiran.</div>';
+                return;
+            }
+            
+            const currentAbsenceData = getCurrentAbsenceData();
+            const schoolDays = parseInt(document.getElementById('school-days-input').value) || 20;
+            
+            let teacherStats = [];
+            
+            // Calculate stats for each teacher
+            monthTeachers.forEach(teacherName => {
+                // Count absences for this teacher (only counted ones)
+                const teacherAbsences = currentAbsenceData.filter(record => 
+                    record.teacher === teacherName && record.category === 'counted'
+                ).length;
+                
+                // Calculate attendance percentage
+                const attendanceRate = Math.max(0, Math.round(((schoolDays - teacherAbsences) / schoolDays) * 100));
+                
+                teacherStats.push({
+                    name: teacherName,
+                    rate: attendanceRate
+                });
+            });
+            
+            // Sort by attendance rate (highest first)
+            teacherStats.sort((a, b) => b.rate - a.rate);
+            
+            // Generate HTML
+            listContainer.innerHTML = teacherStats.map(teacher => {
+                let itemClass = 'excellent';
+                let icon = '✅';
+                let color = '#28a745';
+                
+                if (teacher.rate < 90) {
+                    itemClass = 'good';
+                    icon = '⚠️';
+                    color = '#ffc107';
+                }
+                if (teacher.rate < 75) {
+                    itemClass = 'poor';
+                    icon = '❌';
+                    color = '#dc3545';
+                }
+                
+                return `
+                    <div class="teacher-item ${itemClass}">
+                        <span><strong>${teacher.name}</strong></span>
+                        <span style="color: ${color}; font-weight: bold;">${teacher.rate}% ${icon}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Get current year and month key
+        function getCurrentDataKey() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            return `${year}-${month.padStart(2, '0')}`;
+        }
+
+        // Get absence data for current period
+        function getCurrentAbsenceData() {
+            const key = getCurrentDataKey();
+            return absenceData[key] || [];
+        }
+
+        // Filter and display absence records
+        function filterAbsenceRecords() {
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const sortOrder = document.getElementById('sort-order').value;
+            
+            // Get all absence data from all periods
+            let allData = [];
+            Object.keys(absenceData).forEach(key => {
+                allData = allData.concat(absenceData[key]);
+            });
+            
+            let filteredData = [...allData];
+            
+            // Filter by date range
+            if (dateFrom) {
+                filteredData = filteredData.filter(record => record.date >= dateFrom);
+            }
+            if (dateTo) {
+                filteredData = filteredData.filter(record => record.date <= dateTo);
+            }
+            
+            // Sort by date
+            filteredData.sort((a, b) => {
+                if (sortOrder === 'newest') {
+                    return new Date(b.date) - new Date(a.date);
+                } else {
+                    return new Date(a.date) - new Date(b.date);
+                }
+            });
+            
+            // Display records
+            displayAbsenceRecords(filteredData);
+        }
+
+        function displayAbsenceRecords(data) {
+            const container = document.getElementById('absence-records');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Tiada rekod ketidakhadiran dijumpai untuk tempoh yang dipilih.</div>';
+                return;
+            }
+            
+            container.innerHTML = data.map(record => {
+                const formattedDate = new Date(record.date).toLocaleDateString('ms-MY', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+                
+                const statusClass = record.category === 'excused' ? 'status-excused' : 'status-counted';
+                const statusText = record.category === 'excused' ? 'Excused' : 'Counted';
+                const displayName = record.teacherName || record.teacher;
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <span><strong>${displayName}</strong> - ${formattedDate}</span>
+                        <span><span class="status-indicator ${statusClass}"></span>${statusText} (${record.reason})</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function resetDateFilter() {
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('sort-order').value = 'newest';
+            filterAbsenceRecords();
+        }
+
+        function updateAnalysis() {
+            const selectedYear = document.getElementById('analysis-year').value;
+            const selectedMonth = document.getElementById('analysis-month').value;
+            
+            // Update monthly comparison chart
+            updateMonthlyComparisonChart(selectedYear);
+            
+            // Update reason trend chart
+            updateReasonTrendChart(selectedYear, selectedMonth);
+        }
+
+        // Update monthly comparison chart
+        function updateMonthlyComparisonChart(year) {
+            const monthlyData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 12 months
+            
+            // Calculate absence percentage for each month
+            for (let month = 1; month <= 12; month++) {
+                const key = `${year}-${String(month).padStart(2, '0')}`;
+                const monthData = absenceData[key] || [];
+                const monthTeachers = getTeachersForMonth(key);
+                
+                // Count only "counted" absences
+                const countedAbsences = monthData.filter(record => record.category === 'counted').length;
+                
+                // Get school days for calculation
+                const schoolDays = parseInt(document.getElementById('school-days-input').value) || 20;
+                const totalPossibleDays = schoolDays * monthTeachers.length;
+                
+                if (totalPossibleDays > 0) {
+                    monthlyData[month - 1] = Math.round((countedAbsences / totalPossibleDays) * 100 * 10) / 10;
+                }
+            }
+            
+            monthlyComparisonChart.data.datasets[0].data = monthlyData;
+            monthlyComparisonChart.update();
+        }
+
+        // Update reason trend chart
+        function updateReasonTrendChart(year, selectedMonth) {
+            const reasonData = {};
+            const months = selectedMonth ? [selectedMonth] : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+            
+            // Collect reason data
+            months.forEach(month => {
+                const key = `${year}-${String(month).padStart(2, '0')}`;
+                const monthData = absenceData[key] || [];
+                
+                monthData.forEach(record => {
+                    if (!reasonData[record.reason]) {
+                        reasonData[record.reason] = new Array(months.length).fill(0);
+                    }
+                    const monthIndex = months.indexOf(month);
+                    if (monthIndex !== -1) {
+                        reasonData[record.reason][monthIndex]++;
+                    }
+                });
+            });
+            
+            // Update chart
+            const reasonKeys = Object.keys(reasonData);
+            if (reasonKeys.length > 0) {
+                const colors = ['#dc3545', '#17a2b8', '#28a745', '#ffc107', '#6f42c1', '#fd7e14'];
+                
+                reasonTrendChart.data.labels = months.map(m => {
+                    const monthNames = ['', 'Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogos', 'Sep', 'Okt', 'Nov', 'Dis'];
+                    return monthNames[parseInt(m)];
+                });
+                
+                reasonTrendChart.data.datasets = reasonKeys.slice(0, 6).map((reason, index) => ({
+                    label: reason.length > 20 ? reason.substring(0, 20) + '...' : reason,
+                    data: reasonData[reason],
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    tension: 0.4
+                }));
+            } else {
+                reasonTrendChart.data.labels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun'];
+                reasonTrendChart.data.datasets = [{
+                    label: 'Tiada Data',
+                    data: [0, 0, 0, 0, 0, 0],
+                    borderColor: '#e9ecef',
+                    backgroundColor: 'rgba(233, 236, 239, 0.1)',
+                    tension: 0.4
+                }];
+            }
+            
+            reasonTrendChart.update();
+        }
+
+        // Admin Functions
+        function addTeacher() {
+            const teacherName = document.getElementById('teacher-name').value;
+            if (teacherName.trim()) {
+                // Get current month and year from admin tab
+                const month = document.getElementById('admin-month').value;
+                const year = document.getElementById('admin-year').value;
+                const monthKey = `${year}-${month.padStart(2, '0')}`;
+                
+                // Initialize monthly teacher data if not exists
+                if (!monthlyTeacherData[monthKey]) {
+                    monthlyTeacherData[monthKey] = [];
+                }
+                
+                // Check if teacher already exists in this month
+                if (monthlyTeacherData[monthKey].includes(teacherName)) {
+                    showPopup(`Guru "${teacherName}" sudah wujud dalam bulan ${getMonthName(month)} ${year}.`, 'error');
+                    return;
+                }
+                
+                // Add teacher to monthly data
+                monthlyTeacherData[monthKey].push(teacherName);
+                
+                showPopup(`Guru "${teacherName}" berjaya ditambah untuk bulan ${getMonthName(month)} ${year}.`);
+                document.getElementById('teacher-name').value = '';
+                
+                // Update admin month info and dropdowns
+                updateAdminMonthInfo();
+                
+                // Always refresh the absence recording dropdown regardless of which month we're managing
+                // The dropdown should always show teachers for the current dashboard month
+                setTimeout(() => {
+                    console.log('Teacher added - FORCE refreshing absence recording dropdown');
+                    loadTeachersForAbsenceRecording();
+                    
+                    // Double verification for teacher addition
+                    setTimeout(() => {
+                        const teacherSelect = document.getElementById('teacher-select');
+                        const dashMonth = document.getElementById('month-select').value;
+                        const dashYear = document.getElementById('year-select').value;
+                        const dashKey = `${dashYear}-${dashMonth.padStart(2, '0')}`;
+                        const expectedTeachers = getTeachersForMonth(dashKey);
+                        const actualCount = teacherSelect.options.length - 1;
+                        
+                        console.log(`Post-Add Verification - Expected: ${expectedTeachers.length}, Actual: ${actualCount}`);
+                        if (actualCount !== expectedTeachers.length) {
+                            console.warn('Post-add mismatch! Emergency refresh...');
+                            teacherSelect.innerHTML = '<option value="">Pilih Guru</option>';
+                            expectedTeachers.forEach(teacher => {
+                                teacherSelect.innerHTML += `<option value="${teacher}">${teacher}</option>`;
+                            });
+                        }
+                    }, 150);
+                }, 100);
+                
+                // If we're viewing the same month in dashboard, update it
+                const dashMonth = document.getElementById('month-select').value;
+                const dashYear = document.getElementById('year-select').value;
+                if (month === dashMonth && year === dashYear) {
+                    updateDashboard();
+                }
+                
+                // Save data automatically
+                saveDataToLocalStorage();
+                
+                // Update analysis
+                updateAnalysis();
+            } else {
+                showPopup('Sila masukkan nama guru.', 'error');
+            }
+        }
+
+        function removeIndividualTeacher() {
+            const selectedTeacher = document.getElementById('remove-teacher-select').value;
+            const selectedText = document.getElementById('remove-teacher-select').selectedOptions[0]?.text;
+            
+            if (!selectedTeacher) {
+                showPopup('Sila pilih guru yang ingin dibuang dari senarai.', 'error');
+                return;
+            }
+            
+            showConfirmDialog(
+                `Adakah anda pasti ingin membuang "${selectedText}" dari sistem?`,
+                'Tindakan ini akan membuang guru dan SEMUA data ketidakhadiran yang berkaitan dengan guru tersebut. Tindakan ini tidak boleh dibatalkan.',
+                function() {
+                    const month = document.getElementById('admin-month').value;
+                    const year = document.getElementById('admin-year').value;
+                    const monthKey = `${year}-${month.padStart(2, '0')}`;
+                    
+                    // Remove from monthly teacher data
+                    if (monthlyTeacherData[monthKey]) {
+                        monthlyTeacherData[monthKey] = monthlyTeacherData[monthKey].filter(teacher => 
+                            teacher !== selectedTeacher
+                        );
+                        if (monthlyTeacherData[monthKey].length === 0) {
+                            delete monthlyTeacherData[monthKey];
+                        }
+                    }
+                    
+                    // Remove from absence data across all periods
+                    Object.keys(absenceData).forEach(key => {
+                        absenceData[key] = absenceData[key].filter(record => 
+                            record.teacher !== selectedTeacher
+                        );
+                        // Remove empty periods
+                        if (absenceData[key].length === 0) {
+                            delete absenceData[key];
+                        }
+                    });
+                    
+                    // Update admin displays
+                    updateAdminMonthInfo();
+                    
+                    // Always refresh the absence recording dropdown
+                    setTimeout(() => {
+                        console.log('Teacher removed - FORCE refreshing absence recording dropdown');
+                        loadTeachersForAbsenceRecording();
+                        
+                        // Double verification for teacher removal
+                        setTimeout(() => {
+                            const teacherSelect = document.getElementById('teacher-select');
+                            const dashMonth = document.getElementById('month-select').value;
+                            const dashYear = document.getElementById('year-select').value;
+                            const dashKey = `${dashYear}-${dashMonth.padStart(2, '0')}`;
+                            const expectedTeachers = getTeachersForMonth(dashKey);
+                            const actualCount = teacherSelect.options.length - 1;
+                            
+                            console.log(`Post-Remove Verification - Expected: ${expectedTeachers.length}, Actual: ${actualCount}`);
+                            if (actualCount !== expectedTeachers.length) {
+                                console.warn('Post-remove mismatch! Emergency refresh...');
+                                teacherSelect.innerHTML = '<option value="">Pilih Guru</option>';
+                                expectedTeachers.forEach(teacher => {
+                                    teacherSelect.innerHTML += `<option value="${teacher}">${teacher}</option>`;
+                                });
+                            }
+                        }, 150);
+                    }, 100);
+                    
+                    // If we're viewing the same month in dashboard, update it
+                    const dashMonth = document.getElementById('month-select').value;
+                    const dashYear = document.getElementById('year-select').value;
+                    if (month === dashMonth && year === dashYear) {
+                        updateDashboard();
+                    }
+                    
+                    // Refresh absence records display
+                    filterAbsenceRecords();
+                    
+                    // Save data automatically
+                    saveDataToLocalStorage();
+                    
+                    // Update analysis
+                    updateAnalysis();
+                    
+                    showPopup(`${selectedText} dan semua data ketidakhadiran berkaitan telah dibuang dari sistem! 🗑️✅`);
+                }
+            );
+        }
+
+        function carryForwardTeachers() {
+            const currentMonth = parseInt(document.getElementById('admin-month').value);
+            const currentYear = parseInt(document.getElementById('admin-year').value);
+            const currentMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+            
+            // Get teachers for current month
+            const currentTeachers = getTeachersForMonth(currentMonthKey);
+            
+            if (currentTeachers.length === 0) {
+                showPopup('Tiada guru untuk dibawa ke bulan seterusnya.', 'error');
+                return;
+            }
+            
+            // Calculate next month
+            let nextMonth = currentMonth + 1;
+            let nextYear = currentYear;
+            
+            if (nextMonth > 12) {
+                nextMonth = 1;
+                nextYear = currentYear + 1;
+            }
+            
+            const nextMonthKey = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+            
+            // Check if next month already has teachers
+            if (monthlyTeacherData[nextMonthKey] && monthlyTeacherData[nextMonthKey].length > 0) {
+                showPopup(`Bulan ${getMonthName(nextMonth)} ${nextYear} sudah mempunyai ${monthlyTeacherData[nextMonthKey].length} guru. Guru tidak akan dibawa ke hadapan.`, 'error');
+                return;
+            }
+            
+            // Copy teachers to next month
+            monthlyTeacherData[nextMonthKey] = [...currentTeachers];
+            
+            // Save data automatically
+            saveDataToLocalStorage();
+            
+            showPopup(`${currentTeachers.length} guru berjaya dibawa dari ${getMonthName(currentMonth)} ${currentYear} ke ${getMonthName(nextMonth)} ${nextYear}! 📅✅`);
+            
+            // Update displays if needed
+            updateAdminMonthInfo();
+            updateDashboard();
+            updateAnalysis();
+            
+            // Always refresh absence recording dropdown
+            setTimeout(() => {
+                console.log('Teachers carried forward - FORCE refreshing absence recording dropdown');
+                loadTeachersForAbsenceRecording();
+                
+                // Double verification for carry forward
+                setTimeout(() => {
+                    const teacherSelect = document.getElementById('teacher-select');
+                    const dashMonth = document.getElementById('month-select').value;
+                    const dashYear = document.getElementById('year-select').value;
+                    const dashKey = `${dashYear}-${dashMonth.padStart(2, '0')}`;
+                    const expectedTeachers = getTeachersForMonth(dashKey);
+                    const actualCount = teacherSelect.options.length - 1;
+                    
+                    console.log(`Post-CarryForward Verification - Expected: ${expectedTeachers.length}, Actual: ${actualCount}`);
+                    if (actualCount !== expectedTeachers.length) {
+                        console.warn('Post-carry-forward mismatch! Emergency refresh...');
+                        teacherSelect.innerHTML = '<option value="">Pilih Guru</option>';
+                        expectedTeachers.forEach(teacher => {
+                            teacherSelect.innerHTML += `<option value="${teacher}">${teacher}</option>`;
+                        });
+                    }
+                }, 150);
+            }, 100);
+        }
+
+        function clearMonthTeachers() {
+            const month = document.getElementById('admin-month').value;
+            const year = document.getElementById('admin-year').value;
+            const monthKey = `${year}-${month.padStart(2, '0')}`;
+            const monthTeachers = getTeachersForMonth(monthKey);
+            
+            if (monthTeachers.length === 0) {
+                showPopup('Tiada guru untuk dibuang dalam bulan ini.', 'error');
+                return;
+            }
+            
+            showConfirmDialog(
+                `Adakah anda pasti ingin membuang SEMUA guru untuk bulan ${getMonthName(month)} ${year}?`,
+                'Tindakan ini tidak boleh dibatalkan dan akan membuang semua guru yang telah didaftarkan untuk bulan ini serta SEMUA data ketidakhadiran mereka.',
+                function() {
+                    // Clear teachers for this month
+                    delete monthlyTeacherData[monthKey];
+                    
+                    // Clear absence data for this month
+                    delete absenceData[monthKey];
+                    
+                    // Update admin displays
+                    updateAdminMonthInfo();
+                    
+                    // Always refresh the absence recording dropdown
+                    setTimeout(() => {
+                        console.log('Teacher removed - FORCE refreshing absence recording dropdown');
+                        loadTeachersForAbsenceRecording();
+                        
+                        // Double verification for teacher removal
+                        setTimeout(() => {
+                            const teacherSelect = document.getElementById('teacher-select');
+                            const dashMonth = document.getElementById('month-select').value;
+                            const dashYear = document.getElementById('year-select').value;
+                            const dashKey = `${dashYear}-${dashMonth.padStart(2, '0')}`;
+                            const expectedTeachers = getTeachersForMonth(dashKey);
+                            const actualCount = teacherSelect.options.length - 1;
+                            
+                            console.log(`Post-Remove Verification - Expected: ${expectedTeachers.length}, Actual: ${actualCount}`);
+                            if (actualCount !== expectedTeachers.length) {
+                                console.warn('Post-remove mismatch! Emergency refresh...');
+                                teacherSelect.innerHTML = '<option value="">Pilih Guru</option>';
+                                expectedTeachers.forEach(teacher => {
+                                    teacherSelect.innerHTML += `<option value="${teacher}">${teacher}</option>`;
+                                });
+                            }
+                        }, 150);
+                    }, 100);
+                    
+                    // If we're viewing the same month in dashboard, update it
+                    const dashMonth = document.getElementById('month-select').value;
+                    const dashYear = document.getElementById('year-select').value;
+                    if (month === dashMonth && year === dashYear) {
+                        updateDashboard();
+                    }
+                    
+                    // Refresh absence records display
+                    filterAbsenceRecords();
+                    
+                    // Save data automatically
+                    saveDataToLocalStorage();
+                    
+                    // Update analysis
+                    updateAnalysis();
+                    
+                    showPopup(`Semua guru dan data ketidakhadiran untuk bulan ${getMonthName(month)} ${year} telah dibuang! 🗑️✅`);
+                }
+            );
+        }
+
+        async function saveToCloud() {
+            try {
+                // Get current data
+                const month = document.getElementById('admin-month').value;
+                const year = document.getElementById('admin-year').value;
+                const schoolDays = document.getElementById('school-days-input').value;
+                const monthKey = `${year}-${month.padStart(2, '0')}`;
+                
+                // Get teachers for current month
+                const monthTeachers = monthlyTeacherData[monthKey] || [];
+                
+                // Prepare data for Google Sheets
+                const sheetData = {
+                    timestamp: new Date().toISOString(),
+                    month: month,
+                    year: year,
+                    schoolDays: schoolDays,
+                    totalTeachers: monthTeachers.length,
+                    teacherList: monthTeachers.join(', '),
+                    absenceRecords: (absenceData[monthKey] || []).length
+                };
+                
+                // Google Apps Script Web App URL
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjP9C99EqCadOkan5gK86HfT-HV4UszDJ4TTSFcJ9K3ysx71PzwfJl81NYU5YcycWC/exec';
+                
+                showPopup('Menghantar data ke Google Sheets... ⏳');
+                
+                // Send data to Google Sheets
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sheetData)
+                });
+                
+                showPopup('Data berjaya disimpan ke Google Sheets! ☁️✅\n\nData yang disimpan:\n- Bulan/Tahun: ' + getMonthName(month) + ' ' + year + '\n- Hari Sekolah: ' + schoolDays + '\n- Jumlah Guru: ' + monthTeachers.length);
+                
+            } catch (error) {
+                console.error('Error saving to cloud:', error);
+                showPopup('⚠️ Untuk menyimpan ke Google Sheets:\n\n1. Buat Google Apps Script baru\n2. Salin kod yang disediakan\n3. Deploy sebagai Web App\n4. Gantikan URL dalam sistem\n\nBuat masa ini data disimpan secara tempatan.', 'info');
+            }
+        }
+
+        function saveToLocal() {
+            showPopup('Data berjaya disimpan ke Localhost! 💾');
+        }
+
+        // Helper function to get month name
+        function getMonthName(monthNumber) {
+            const months = ['', 'Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 
+                          'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+            return months[parseInt(monthNumber)];
+        }
+
+        function saveAbsence() {
+            const date = document.getElementById('absence-date').value;
+            const teacher = document.getElementById('teacher-select').value;
+            const reason = document.getElementById('absence-reason').value;
+            
+            if (date && teacher && reason) {
+                // Determine if reason is excused or counted
+                const excusedReasons = [
+                    'Bekerja dari rumah', 'Bengkel', 'Bertugas dalam kokurikulum/koakademik/sukan',
+                    'Covid-19', 'Kursus', 'Mesyuarat', 'Pengawas peperiksaan',
+                    'Proses pemulihan di JPN', 'Proses pemulihan di PPD', 'Taklimat',
+                    'Tugas rasmi seperti yang diarahkan oleh pentadbiran sekolah/PPD/JPN/KPM',
+                    'Cuti tanpa rekod'
+                ];
+                
+                const category = excusedReasons.includes(reason) ? 'excused' : 'counted';
+                const categoryText = category === 'excused' ? 'tidak dikira' : 'dikira';
+                
+                // Get year-month key from the absence date
+                const absenceDate = new Date(date);
+                const yearMonth = `${absenceDate.getFullYear()}-${String(absenceDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                // Initialize array if it doesn't exist
+                if (!absenceData[yearMonth]) {
+                    absenceData[yearMonth] = [];
+                }
+                
+                // Get teacher name for display
+                const teacherSelect = document.getElementById('teacher-select');
+                const teacherName = teacherSelect.selectedOptions[0].text;
+                
+                // Add absence record
+                absenceData[yearMonth].push({
+                    teacher: teacher,
+                    teacherName: teacherName,
+                    date: date,
+                    reason: reason,
+                    category: category
+                });
+                
+                showPopup(`Rekod ketidakhadiran berjaya disimpan! 📝\nKategori: ${categoryText} dalam peratus kehadiran.`);
+                
+                // Save data automatically
+                saveDataToLocalStorage();
+                
+                // Clear form
+                document.getElementById('absence-date').value = '';
+                document.getElementById('teacher-select').value = '';
+                document.getElementById('absence-reason').value = '';
+                
+                // Update dashboard if we're viewing the same period
+                updateDashboard();
+                filterAbsenceRecords();
+                
+                // Update analysis charts
+                updateAnalysis();
+            } else {
+                showPopup('Sila lengkapkan semua maklumat.', 'error');
+            }
+        }
+
+        // Popup Functions
+        function showPopup(message, type = 'success') {
+            document.getElementById('popup-message').textContent = message;
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('popup').classList.add('show');
+            
+            // Auto hide after 3 seconds
+            setTimeout(hidePopup, 3000);
+        }
+
+        function hidePopup() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('popup').classList.remove('show');
+        }
+
+        // Confirmation Dialog Functions
+        function showConfirmDialog(title, message, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-overlay').classList.add('show');
+            document.getElementById('confirm-dialog').classList.add('show');
+            
+            // Set up confirm button click handler
+            const confirmBtn = document.getElementById('confirm-yes');
+            confirmBtn.onclick = function() {
+                hideConfirmDialog();
+                onConfirm();
+            };
+        }
+
+        function hideConfirmDialog() {
+            document.getElementById('confirm-overlay').classList.remove('show');
+            document.getElementById('confirm-dialog').classList.remove('show');
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            // Load saved data first
+            loadDataFromLocalStorage();
+            
+            initCharts();
+            updateDashboard();
+            updateAnalysis();
+            updateAdminMonthInfo();
+            filterAbsenceRecords(); // Initialize absence records display
+            loadTeachersForAbsenceRecording(); // Initialize teacher dropdown for absence recording
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'993ad0823364cf0c',t:'MTc2MTMyMjk2Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
